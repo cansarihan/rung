@@ -208,7 +208,40 @@ npm run show
 
 ## Deployment
 
-See `deployments/preprod.json` for the current record.
+A survey is live on Midnight Preview:
+
+| | |
+| ---------- | ------------------------------------------------------------------ |
+| Network    | Preview                                                              |
+| Address    | `a563d76997b5fe6882602b0b7a772b6eca4dd2a9aff07a0492239bba2345d4c6`   |
+| Band width | $10,000                                                              |
+| Bands      | 12, the highest open ended                                           |
+
+`deployments/preview.json` holds the same record, including the survey nonce.
+
+![Output of npm run deploy, ending with the deployed contract address on Preview](docs/screenshots/deploy.png)
+
+Reading a survey back needs no wallet, only the indexer, so it returns in a
+couple of seconds rather than waiting out a chain sync:
+
+```
+$ npm run show
+
+  Address:            a563d76997b5fe6882602b0b7a772b6eca4dd2a9aff07a0492239bba2345d4c6
+
+------------------------------------------------------------------
+Survey                                          0 report(s)
+------------------------------------------------------------------
+  $0 to $9,999                                         0
+  $10,000 to $19,999                                   0
+  ...
+  $110,000 and above                                   0
+------------------------------------------------------------------
+```
+
+Preprod was the first target, but its faucet was answering
+`{"status":"NOT_SERVING","reason":"SERVICES_DOWN"}` at the time, so the survey
+went to Preview. Nothing but `RUNG_NETWORK` differs between the two.
 
 ## Roadmap
 

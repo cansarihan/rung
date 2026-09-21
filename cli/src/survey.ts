@@ -97,8 +97,16 @@ export type SurveyState = {
   readonly totals: ReadonlyMap<bigint, bigint>;
 };
 
+/**
+ * Reading a survey only touches public state, so it takes the indexer alone
+ * rather than a full provider set. A reader does not need a wallet, and
+ * building one would mean waiting out a full chain sync first.
+ */
+export const publicReader = (config: NetworkConfig) =>
+  indexerPublicDataProvider(config.indexer, config.indexerWS);
+
 export const readSurvey = async (
-  providers: RungProviders,
+  providers: { publicDataProvider: ReturnType<typeof publicReader> },
   contractAddress: ContractAddress,
 ): Promise<SurveyState | null> => {
   const contractState = await providers.publicDataProvider.queryContractState(

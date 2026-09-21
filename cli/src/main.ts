@@ -13,6 +13,7 @@ import {
   createProviders,
   deploySurvey,
   joinSurvey,
+  publicReader,
   readSurvey,
   submitReport,
   type RungProviders,
@@ -191,14 +192,15 @@ const commands: Record<string, () => Promise<void>> = {
 
   async show() {
     const config = selectNetwork();
-    const seed = resolveSeed();
-    const wallet = await openWallet(config, seed);
-    const providers = await createProviders(wallet, config);
     const address = await loadAddress(config);
 
-    const state = await readSurvey(providers, address);
+    const state = await readSurvey(
+      { publicDataProvider: publicReader(config) },
+      address,
+    );
     if (!state) throw new Error(`No survey found at ${address}.`);
 
+    heading("Rung", `network: ${config.name}`);
     field("Address", address);
     printDistribution(state, surveyScale().currency);
   },
