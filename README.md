@@ -144,15 +144,18 @@ compact update 0.31.1
 compact compile --version    # 0.31.1
 ```
 
-Install dependencies, compile the contract and run the tests:
+Install dependencies, compile the contract, build the packages and run the tests:
 
 ```bash
 npm install
 npm run compact
+npm run build
 npm test
 ```
 
 `npm run compact` writes the circuits and keys to `contract/src/managed/rung`.
+`npm run build` is not optional before using the CLI: the CLI imports the
+contract as a package, so it resolves to `contract/dist`.
 
 Start the proof server in its own terminal and leave it running:
 

@@ -36,6 +36,8 @@ jobs:
       - name: Check the committed build matches the source
         run: git diff --exit-code contract/src/managed
 
-      - run: npm run typecheck
+      # The CLI imports the contract as a package, so the contract has to be
+      # built before anything can resolve its types.
       - run: npm run build
+      - run: npm run typecheck
       - run: npm test
