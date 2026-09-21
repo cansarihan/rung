@@ -157,6 +157,14 @@ npm test
 `npm run build` is not optional before using the CLI: the CLI imports the
 contract as a package, so it resolves to `contract/dist`.
 
+![Output of compact compile, listing the report circuit and the generated circuits and keys](docs/screenshots/compile.png)
+
+The circuit is reported as `k=13, rows=4575`: the proof system is sized for 8192
+rows and the report circuit uses 4575 of them, most of it the hash and the set
+membership check.
+
+![Output of npm test, twenty passing contract tests](docs/screenshots/tests.png)
+
 Start the proof server in its own terminal and leave it running:
 
 ```bash
