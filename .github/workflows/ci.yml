@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install the Compact toolchain
+        uses: midnightntwrk/setup-compact-action@v1
+        with:
+          compact-version: '0.31.1'
+
+      - run: npm ci
+
+      - name: Compile the contract
+        run: npm run compact
+
+      # The compiler is deterministic, so a checked-in build that differs from
+      # a fresh one means the committed circuits no longer match the source.
+      - name: Check the committed build matches the source
+        run: git diff --exit-code contract/src/managed
+
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
