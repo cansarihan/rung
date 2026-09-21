@@ -1,0 +1,65 @@
+pragma language_version 0.23;
+
+import CompactStandardLibrary;
+
+// Width of one compensation band, in whole currency units of annual gross pay.
+export ledger bandWidth: Uint<64>;
+
+// How many bands this survey recognises. The highest band is open ended.
+export ledger bandCount: Uint<8>;
+
+// Number of participants that reported into each band.
+export ledger bandTotals: Map<Uint<8>, Counter>;
+
+// One tag per participant, so that nobody can report twice.
+export ledger spentTags: Set<Bytes<32>>;
+
+// Number of reports the survey has accepted.
+export ledger reportCount: Counter;
+
+// The participant's long lived secret. It never leaves the proving circuit.
+witness participantSecret(): Bytes<32>;
+
+// The participant's annual gross pay. It never leaves the proving circuit.
+witness reportedCompensation(): Uint<64>;
+
+constructor(width: Uint<64>, count: Uint<8>) {
+  assert(width > 0, "band width must be positive");
+  assert(count > 1, "a survey needs at least two bands");
+  bandWidth = disclose(width);
+  bandCount = disclose(count);
+}
+
+// Lowest amount that still belongs to the given band.
+export pure circuit bandFloor(width: Uint<64>, band: Uint<8>): Uint<64> {
+  return ((band as Uint<64>) * width) as Uint<64>;
+}
+
+// Binds a participant to a single report without revealing who they are.
+export circuit participantTag(secret: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "rung:tag:v1"), secret]);
+}
+
+// Publishes the band a participant falls into, and nothing else.
+export circuit report(band: Uint<8>): [] {
+  // The band is the single fact this circuit makes public. Everything the
+  // proof consumes below stays inside the circuit.
+  const reported = disclose(band);
+  assert(reported < bandCount, "band is outside the survey range");
+
+  const amount = reportedCompensation();
+  assert(amount >= bandFloor(bandWidth, reported), "amount falls below the reported band");
+  if (reported < (bandCount - 1) as Uint<8>) {
+    assert(amount < bandFloor(bandWidth, (reported + 1) as Uint<8>), "amount falls above the reported band");
+  }
+
+  const tag = disclose(participantTag(participantSecret()));
+  assert(!spentTags.member(tag), "this participant has already reported");
+  spentTags.insert(tag);
+
+  if (!bandTotals.member(reported)) {
+    bandTotals.insert(reported, default<Counter>);
+  }
+  bandTotals.lookup(reported).increment(1);
+  reportCount.increment(1);
+}
