@@ -2,13 +2,14 @@
   "name": "rung",
   "version": "0.1.0",
   "description": "Privacy preserving compensation surveys on Midnight",
-  "author": "Can Sarıhan",
+  "author": "Can Sar\u0131han",
   "license": "MIT",
   "private": true,
   "type": "module",
   "workspaces": [
     "contract",
-    "cli"
+    "cli",
+    "web"
   ],
   "scripts": {
     "compact": "npm run compact --workspace contract",
@@ -16,7 +17,8 @@
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "deploy": "npm run deploy --workspace cli",
-    "proof-server": "docker run --rm -p 6300:6300 midnightntwrk/proof-server:8.1.0 midnight-proof-server -v"
+    "proof-server": "docker run --rm -p 6300:6300 midnightntwrk/proof-server:8.1.0 midnight-proof-server -v",
+    "dev": "npm run dev --workspace web"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

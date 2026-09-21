@@ -11,3 +11,8 @@ coverage/
 # Compiler output under contract/src/managed is committed on purpose: it holds
 # the circuits, the proving key and the verifier key that a reviewer needs to
 # reproduce a proof without running the compiler.
+
+# Copied from contract/src/managed by the web build.
+web/public/keys/
+web/public/zkir/
+web/dist/
