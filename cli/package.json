@@ -7,9 +7,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "deploy": "tsx src/main.ts deploy",
-    "report": "tsx src/main.ts report",
-    "show": "tsx src/main.ts show",
+    "deploy": "node --max-old-space-size=8192 --import tsx src/main.ts deploy",
+    "report": "node --max-old-space-size=8192 --import tsx src/main.ts report",
+    "show": "node --max-old-space-size=8192 --import tsx src/main.ts show",
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
