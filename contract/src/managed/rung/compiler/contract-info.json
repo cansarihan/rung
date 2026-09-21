@@ -34,6 +34,13 @@
       "proof": false,
       "arguments": [
         {
+          "name": "nonce",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
           "name": "secret",
           "type": {
             "type-name": "Bytes",
@@ -110,8 +117,18 @@
       }
     },
     {
-      "name": "bandTotals",
+      "name": "surveyNonce",
       "index": 2,
+      "exported": true,
+      "storage": "Cell",
+      "type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "bandTotals",
+      "index": 3,
       "exported": true,
       "storage": "Map",
       "key": {
@@ -124,7 +141,7 @@
     },
     {
       "name": "spentTags",
-      "index": 3,
+      "index": 4,
       "exported": true,
       "storage": "Set",
       "type": {
@@ -134,7 +151,7 @@
     },
     {
       "name": "reportCount",
-      "index": 4,
+      "index": 5,
       "exported": true,
       "storage": "Counter"
     }

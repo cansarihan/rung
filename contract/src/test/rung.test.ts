@@ -10,12 +10,13 @@ setNetworkId("undeployed");
 const WIDTH = 10_000n;
 const COUNT = 12n;
 const TOP_BAND = COUNT - 1n;
+const NONCE = new Uint8Array(32).fill(42);
 
 const participant = (seed: number, compensation: bigint): RungPrivateState =>
   createPrivateState(new Uint8Array(32).fill(seed), compensation);
 
 const surveyWith = (first: RungPrivateState) =>
-  new RungSimulator(WIDTH, COUNT, first);
+  new RungSimulator(WIDTH, COUNT, NONCE, first);
 
 describe("survey setup", () => {
   it("publishes the band scale and starts empty", () => {
@@ -24,18 +25,19 @@ describe("survey setup", () => {
 
     expect(state.bandWidth).toEqual(WIDTH);
     expect(state.bandCount).toEqual(COUNT);
+    expect(state.surveyNonce).toEqual(NONCE);
     expect(state.reportCount).toEqual(0n);
     expect(state.spentTags.isEmpty()).toBe(true);
     expect(state.bandTotals.isEmpty()).toBe(true);
   });
 
   it("refuses a scale that cannot classify anything", () => {
-    expect(() => new RungSimulator(0n, COUNT, participant(1, 55_000n))).toThrow(
-      /band width must be positive/,
-    );
-    expect(() => new RungSimulator(WIDTH, 1n, participant(1, 55_000n))).toThrow(
-      /at least two bands/,
-    );
+    expect(
+      () => new RungSimulator(0n, COUNT, NONCE, participant(1, 55_000n)),
+    ).toThrow(/band width must be positive/);
+    expect(
+      () => new RungSimulator(WIDTH, 1n, NONCE, participant(1, 55_000n)),
+    ).toThrow(/at least two bands/);
   });
 });
 
@@ -115,13 +117,33 @@ describe("one report per participant", () => {
 
   it("derives a stable tag that does not leak the secret", () => {
     const secret = new Uint8Array(32).fill(7);
-    const tag = pureCircuits.participantTag(secret);
+    const tag = pureCircuits.participantTag(NONCE, secret);
 
-    expect(tag).toEqual(pureCircuits.participantTag(secret));
-    expect(tag).not.toEqual(pureCircuits.participantTag(new Uint8Array(32).fill(8)));
+    expect(tag).toEqual(pureCircuits.participantTag(NONCE, secret));
+    expect(tag).not.toEqual(
+      pureCircuits.participantTag(NONCE, new Uint8Array(32).fill(8)),
+    );
     expect(Buffer.from(tag).toString("hex")).not.toContain(
       Buffer.from(secret).toString("hex"),
     );
+  });
+
+  it("gives one secret unrelated tags in different surveys", () => {
+    const secret = new Uint8Array(32).fill(7);
+    const other = new Uint8Array(32).fill(43);
+
+    expect(pureCircuits.participantTag(NONCE, secret)).not.toEqual(
+      pureCircuits.participantTag(other, secret),
+    );
+  });
+
+  it("lets a participant report once in each of two surveys", () => {
+    const person = participant(1, 52_000n);
+    const first = surveyWith(person);
+    first.report(5n);
+
+    const second = new RungSimulator(WIDTH, COUNT, new Uint8Array(32).fill(43), person);
+    expect(second.report(5n).reportCount).toEqual(1n);
   });
 });
 

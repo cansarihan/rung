@@ -67,12 +67,13 @@ export const deploySurvey = (
   initialPrivateState: RungPrivateState,
   width: bigint,
   count: bigint,
+  nonce: Uint8Array,
 ): Promise<Survey> =>
   deployContract(providers, {
     compiledContract: compiled,
     privateStateId,
     initialPrivateState,
-    args: [width, count],
+    args: [width, count, nonce],
   });
 
 export const joinSurvey = (
@@ -90,6 +91,7 @@ export const joinSurvey = (
 export type SurveyState = {
   readonly bandWidth: bigint;
   readonly bandCount: bigint;
+  readonly surveyNonce: Uint8Array;
   readonly reportCount: bigint;
   /** Report count per band index, including bands nobody reported into. */
   readonly totals: ReadonlyMap<bigint, bigint>;
@@ -113,6 +115,7 @@ export const readSurvey = async (
   return {
     bandWidth: state.bandWidth,
     bandCount: state.bandCount,
+    surveyNonce: state.surveyNonce,
     reportCount: state.reportCount,
     totals,
   };

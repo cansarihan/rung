@@ -56,6 +56,7 @@ the proof, never transmitted:
 | ------------- | ------------------------- | --------------------------------------- |
 | `bandWidth`   | `Uint<64>`                | Width of one band, so clients agree      |
 | `bandCount`   | `Uint<8>`                 | Number of bands; the last is open ended  |
+| `surveyNonce` | `Bytes<32>`               | Scopes this survey's tags to itself      |
 | `bandTotals`  | `Map<Uint<8>, Counter>`   | Reports per band                         |
 | `spentTags`   | `Set<Bytes<32>>`          | One tag per participant                  |
 | `reportCount` | `Counter`                 | Total accepted reports                   |
@@ -66,12 +67,15 @@ The `report` circuit discloses exactly two values, and both are deliberate:
   is the entire purpose of the survey. Everything after that line compares the
   private amount against public band boundaries, so the comparison happens inside
   the proof and only its outcome — accept or reject — is observable.
-- **The tag**, `persistentHash(["rung:tag:v1", secret])`. Disclosed because the
-  contract has to check set membership against public state to reject a second
-  report. It is a preimage-resistant hash under a domain separator, so it
-  identifies the *submission* without identifying the participant, and the same
-  secret used on a different Rung deployment produces the same tag only within
-  the same domain.
+- **The tag**, `persistentHash(["rung:tag:v1", surveyNonce, secret])`. Disclosed
+  because rejecting a second report means checking membership of a public set.
+  It is a preimage-resistant hash, so it identifies the *submission* without
+  identifying the participant. The survey nonce is in the preimage deliberately:
+  hashing the secret alone would give one person the same tag in every survey,
+  and anyone holding two Rung ledgers could line the two up and follow that
+  person between them. With the nonce, the same secret produces unrelated tags
+  in every survey, and each survey still gets its one-report-per-participant
+  guarantee.
 
 The amount is never disclosed. It has no path to the ledger: it is read from a
 witness, compared against two public bounds, and discarded when the circuit ends.
@@ -156,7 +160,7 @@ Start the proof server in its own terminal and leave it running:
 npm run proof-server
 ```
 
-Create a wallet seed and point the CLI at Preprod:
+Create a wallet seed and choose a network:
 
 ```bash
 cp .env.example .env
@@ -165,9 +169,18 @@ cp .env.example .env
 set -a && . ./.env && set +a
 ```
 
-Deploy a survey. The CLI prints its unshielded address and waits; fund that
-address from the [Preprod faucet](https://midnight-tmnight-preprod.nethermind.dev/),
-and it will register the tokens for fee generation and continue on its own.
+`RUNG_NETWORK` accepts `preview` or `preprod`. Addresses are network specific, so
+a seed produces a different address on each, and the faucets are separate
+services that go down independently of one another:
+
+| Network | Faucet                                             | Health                                                    |
+| ------- | -------------------------------------------------- | --------------------------------------------------------- |
+| Preview | https://midnight-tmnight-preview.nethermind.dev/    | `/api/health` returns `SERVING` when it can dispense       |
+| Preprod | https://midnight-tmnight-preprod.nethermind.dev/    | same endpoint                                              |
+
+Deploy a survey. The CLI prints its unshielded address and waits there; fund that
+address from the faucet for the network you chose, and it will register the
+tokens for fee generation and carry on by itself.
 
 ```bash
 npm run deploy

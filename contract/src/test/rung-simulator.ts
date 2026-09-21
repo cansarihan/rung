@@ -23,6 +23,7 @@ export class RungSimulator {
   constructor(
     width: bigint,
     count: bigint,
+    nonce: Uint8Array,
     initialParticipant: RungPrivateState,
   ) {
     this.contract = new Contract<RungPrivateState>(witnesses);
@@ -31,6 +32,7 @@ export class RungSimulator {
         createConstructorContext(initialParticipant, "0".repeat(64)),
         width,
         count,
+        nonce,
       );
     this.circuitContext = createCircuitContext(
       sampleContractAddress(),

@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { allBands, bandOf, formatBand, type RungPrivateState } from "@rung/contract";
@@ -25,6 +25,7 @@ type Deployment = {
   readonly address: string;
   readonly bandWidth: string;
   readonly bandCount: string;
+  readonly surveyNonce: string;
   readonly deployedAt: string;
 };
 
@@ -127,8 +128,12 @@ const commands: Record<string, () => Promise<void>> = {
         compensation: 0n,
       };
 
+      // A fresh nonce per survey keeps its report tags unrelated to the tags
+      // the same participants produce in any other survey.
+      const nonce = randomBytes(32);
+
       const survey = await step("Deploying survey", () =>
-        deploySurvey(providers, privateState, scale.width, scale.count),
+        deploySurvey(providers, privateState, scale.width, scale.count, nonce),
       );
       const address = survey.deployTxData.public.contractAddress;
 
@@ -137,6 +142,7 @@ const commands: Record<string, () => Promise<void>> = {
         address,
         bandWidth: scale.width.toString(),
         bandCount: scale.count.toString(),
+        surveyNonce: nonce.toString("hex"),
         deployedAt: new Date().toISOString(),
       });
 

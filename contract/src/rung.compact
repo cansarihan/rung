@@ -8,6 +8,11 @@ export ledger bandWidth: Uint<64>;
 // How many bands this survey recognises. The highest band is open ended.
 export ledger bandCount: Uint<8>;
 
+// Separates this survey's tags from those of every other survey. Without it one
+// secret would hash to the same tag everywhere, and an observer could follow a
+// participant from one survey's ledger into another's.
+export ledger surveyNonce: Bytes<32>;
+
 // Number of participants that reported into each band.
 export ledger bandTotals: Map<Uint<8>, Counter>;
 
@@ -23,11 +28,15 @@ witness participantSecret(): Bytes<32>;
 // The participant's annual gross pay. It never leaves the proving circuit.
 witness reportedCompensation(): Uint<64>;
 
-constructor(width: Uint<64>, count: Uint<8>) {
+constructor(width: Uint<64>, count: Uint<8>, nonce: Bytes<32>) {
   assert(width > 0, "band width must be positive");
   assert(count > 1, "a survey needs at least two bands");
+  // Computing the top floor here rejects a scale that overflows at deployment,
+  // rather than leaving a survey that accepts nothing.
+  assert(bandFloor(width, (count - 1) as Uint<8>) >= width, "band scale is too wide");
   bandWidth = disclose(width);
   bandCount = disclose(count);
+  surveyNonce = disclose(nonce);
 }
 
 // Lowest amount that still belongs to the given band.
@@ -35,9 +44,10 @@ export pure circuit bandFloor(width: Uint<64>, band: Uint<8>): Uint<64> {
   return ((band as Uint<64>) * width) as Uint<64>;
 }
 
-// Binds a participant to a single report without revealing who they are.
-export circuit participantTag(secret: Bytes<32>): Bytes<32> {
-  return persistentHash<Vector<2, Bytes<32>>>([pad(32, "rung:tag:v1"), secret]);
+// Binds a participant to a single report in one survey, without revealing who
+// they are and without linking them to their reports in any other survey.
+export circuit participantTag(nonce: Bytes<32>, secret: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([pad(32, "rung:tag:v1"), nonce, secret]);
 }
 
 // Publishes the band a participant falls into, and nothing else.
@@ -53,7 +63,7 @@ export circuit report(band: Uint<8>): [] {
     assert(amount < bandFloor(bandWidth, (reported + 1) as Uint<8>), "amount falls above the reported band");
   }
 
-  const tag = disclose(participantTag(participantSecret()));
+  const tag = disclose(participantTag(surveyNonce, participantSecret()));
   assert(!spentTags.member(tag), "this participant has already reported");
   spentTags.insert(tag);
 

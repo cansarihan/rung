@@ -15,7 +15,7 @@ export type ProvableCircuits<PS> = {
 
 export type PureCircuits = {
   bandFloor(width_0: bigint, band_0: bigint): bigint;
-  participantTag(secret_0: Uint8Array): Uint8Array;
+  participantTag(nonce_0: Uint8Array, secret_0: Uint8Array): Uint8Array;
 }
 
 export type Circuits<PS> = {
@@ -23,6 +23,7 @@ export type Circuits<PS> = {
             width_0: bigint,
             band_0: bigint): __compactRuntime.CircuitResults<PS, bigint>;
   participantTag(context: __compactRuntime.CircuitContext<PS>,
+                 nonce_0: Uint8Array,
                  secret_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
   report(context: __compactRuntime.CircuitContext<PS>, band_0: bigint): __compactRuntime.CircuitResults<PS, []>;
 }
@@ -30,6 +31,7 @@ export type Circuits<PS> = {
 export type Ledger = {
   readonly bandWidth: bigint;
   readonly bandCount: bigint;
+  readonly surveyNonce: Uint8Array;
   bandTotals: {
     isEmpty(): boolean;
     size(): bigint;
@@ -57,7 +59,8 @@ export declare class Contract<PS = any, W extends Witnesses<PS> = Witnesses<PS>>
   constructor(witnesses: W);
   initialState(context: __compactRuntime.ConstructorContext<PS>,
                width_0: bigint,
-               count_0: bigint): __compactRuntime.ConstructorResult<PS>;
+               count_0: bigint,
+               nonce_0: Uint8Array): __compactRuntime.ConstructorResult<PS>;
 }
 
 export declare function ledger(state: __compactRuntime.StateValue | __compactRuntime.ChargedState): Ledger;
