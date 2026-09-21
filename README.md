@@ -214,10 +214,35 @@ A survey is live on Midnight Preview:
 | ---------- | ------------------------------------------------------------------ |
 | Network    | Preview                                                              |
 | Address    | `a563d76997b5fe6882602b0b7a772b6eca4dd2a9aff07a0492239bba2345d4c6`   |
+| Deploy tx  | `2cd0c1939d98f64bba141c1ec900b925c7c63771523a474ea7e64201100b3d8d`   |
+| Block      | 964637, 2026-09-21T15:50:48Z                                         |
 | Band width | $10,000                                                              |
 | Bands      | 12, the highest open ended                                           |
 
 `deployments/preview.json` holds the same record, including the survey nonce.
+
+The deployment can be confirmed against the network rather than taken on trust:
+
+```bash
+curl -s -X POST https://indexer.preview.midnight.network/api/v4/graphql \
+  -H 'content-type: application/json' \
+  -d '{"query":"{ contractAction(address: \"a563d76997b5fe6882602b0b7a772b6eca4dd2a9aff07a0492239bba2345d4c6\") { __typename address ... on ContractDeploy { transaction { hash block { height timestamp } } } } }"}'
+```
+
+```json
+{
+  "data": {
+    "contractAction": {
+      "__typename": "ContractDeploy",
+      "address": "a563d76997b5fe6882602b0b7a772b6eca4dd2a9aff07a0492239bba2345d4c6",
+      "transaction": {
+        "hash": "2cd0c1939d98f64bba141c1ec900b925c7c63771523a474ea7e64201100b3d8d",
+        "block": { "height": 964637, "timestamp": 1790005848000 }
+      }
+    }
+  }
+}
+```
 
 ![Output of npm run deploy, ending with the deployed contract address on Preview](docs/screenshots/deploy.png)
 

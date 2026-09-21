@@ -4,5 +4,7 @@
   "bandWidth": "10000",
   "bandCount": "12",
   "surveyNonce": "5a14ed0874be11cbf5bb170d726ad4260858cd460b67994cf04275aa2567e15b",
-  "deployedAt": "2026-09-21T15:51:14.866Z"
+  "deployedAt": "2026-09-21T15:51:14.866Z",
+  "deployTx": "2cd0c1939d98f64bba141c1ec900b925c7c63771523a474ea7e64201100b3d8d",
+  "deployBlock": 964637
 }
