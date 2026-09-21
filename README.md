@@ -7,6 +7,8 @@ knowledge, that their pay falls inside the band they are reporting and that they
 have not reported before. The ledger stores the resulting distribution. It never
 stores a salary.
 
+**[rung-midnight.vercel.app](https://rung-midnight.vercel.app)** — live client, on Preview.
+
 ## The idea
 
 Compensation is the textbook case of information that is valuable in aggregate and
@@ -94,6 +96,49 @@ one secret reports once, and a participant who controls two secrets can report
 twice. Binding a secret to an eligible cohort — proving membership without
 revealing which member — is the next piece of work, described under Roadmap.
 
+## The browser client
+
+The client is a static page. It holds no server of its own and keeps no account:
+Lace supplies the indexer, the node and the proving service, and the page
+supplies the circuit.
+
+Reading and reporting are deliberately separated. The distribution is public, so
+the ladder is drawn straight from the indexer with no wallet and no keys — a
+visitor sees the survey in about two seconds. A wallet is needed only to add a
+report, which is the only operation that produces a transaction.
+
+### The privacy claim, made checkable
+
+The claim is that a participant's pay is never disclosed, only its band. A claim
+like that is easy to assert and hard to believe, so the client puts both halves
+on screen while the amount is being typed, before anything is submitted:
+
+| Stays on this device      | Goes to the chain                       |
+| ------------------------- | --------------------------------------- |
+| the amount                | the band index                          |
+| the participant secret    | the tag, `hash(surveyNonce, secret)`    |
+|                           | the proof that the two agree            |
+
+Everything in the left column is read by the circuit and discarded when it
+finishes. Everything in the right column is what the transaction carries, and it
+is the same data the ladder is drawn from, so the published distribution can be
+compared against the claim directly.
+
+Two behaviours are worth watching for, because they are the claim in motion:
+
+- Report an amount, then read the contract state from the indexer. The band
+  count goes up by one. The amount appears nowhere, in any field, at any block.
+- Report a second time from the same wallet. The circuit fails before a
+  transaction is built, because the tag is already in `spentTags` — the contract
+  recognises the repeat without ever having learned who the participant is.
+
+Private state lives in memory for the lifetime of the tab. The participant
+secret is the one exception: it is random, stored per wallet address in local
+storage, and never transmitted. It has to be secret rather than derived from a
+public key, because a tag anyone could recompute would let anyone test whether a
+given person is in the survey, which is precisely the anonymity the tag exists
+to protect.
+
 ## Repository layout
 
 ```
@@ -107,6 +152,11 @@ cli/
   src/main.ts               deploy, report and show commands
   src/wallet.ts             wallet, dust registration, provider wiring
   src/survey.ts             contract operations
+web/
+  src/lace.ts               wallet discovery, connect and disconnect
+  src/survey.ts             providers, reading and reporting
+  src/private-state.ts      in memory private state, participant secret
+  src/App.tsx               the ladder and the disclosure panel
 deployments/                one record per network
 ```
 
@@ -272,8 +322,8 @@ went to Preview. Nothing but `RUNG_NETWORK` differs between the two.
 
 | Stage                | Work                                                                 |
 | -------------------- | -------------------------------------------------------------------- |
-| Contract and CLI     | Banded reporting, one report per secret, deployed to Preprod          |
-| Web client           | Browser client with Lace, so reporting needs no terminal              |
+| Contract and CLI     | Banded reporting, one report per secret, deployed and verifiable      |
+| Web client           | Lace in the browser, reporting without a terminal                     |
 | Eligible cohorts     | Prove membership of a cohort without revealing which member           |
 | Richer aggregates    | Percentile boundaries over the distribution, still without amounts    |
 

@@ -16,3 +16,4 @@ coverage/
 web/public/keys/
 web/public/zkir/
 web/dist/
+.vercel
