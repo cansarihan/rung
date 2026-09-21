@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+*.log
+
+# Local wallet seeds and deployment records.
+.env
+.env.*
+!.env.example
+
+# Compiler output under contract/src/managed is committed on purpose: it holds
+# the circuits, the proving key and the verifier key that a reviewer needs to
+# reproduce a proof without running the compiler.
