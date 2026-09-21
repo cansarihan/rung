@@ -11,7 +11,7 @@ import {
   type SurveyState,
 } from "./survey";
 
-type Stage = "idle" | "joining" | "proving" | "submitting" | "done";
+type Stage = "idle" | "joining" | "proving" | "done";
 
 const hex = (bytes: Uint8Array, cut = 8): string => {
   const full = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
@@ -106,6 +106,24 @@ export const App = () => {
   const [stage, setStage] = useState<Stage>("idle");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ txId: string; band: bigint } | null>(null);
+  // Assume a wallet is there until the poll below says otherwise, so the
+  // install hint never flashes at someone who does have Lace.
+  const [walletPresent, setWalletPresent] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    const deadline = Date.now() + 2_500;
+    const look = () => {
+      if (cancelled) return;
+      if (isWalletInstalled()) return setWalletPresent(true);
+      if (Date.now() > deadline) return setWalletPresent(false);
+      setTimeout(look, 200);
+    };
+    look();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!config.contractAddress) return;
@@ -186,7 +204,7 @@ export const App = () => {
     }
   };
 
-  const busy = stage === "joining" || stage === "proving" || stage === "submitting";
+  const busy = stage === "joining" || stage === "proving";
 
   return (
     <>
@@ -311,11 +329,7 @@ export const App = () => {
                     {busy ? "Working…" : "Prove and submit"}
                   </button>
                 ) : (
-                  <button
-                    className="primary"
-                    onClick={onConnect}
-                    disabled={!isWalletInstalled() && false}
-                  >
+                  <button className="primary" onClick={onConnect}>
                     Connect Lace to report
                   </button>
                 )}
@@ -326,31 +340,32 @@ export const App = () => {
                   <li className={stage === "joining" ? "active" : "done"}>
                     Loading the survey and its circuit
                   </li>
-                  <li
-                    className={
-                      stage === "proving" ? "active" : stage === "joining" ? "" : "done"
-                    }
-                  >
-                    Proving the band without the amount
-                  </li>
-                  <li className={stage === "submitting" ? "active" : ""}>
-                    Submitting through Lace
+                  <li className={stage === "proving" ? "active" : ""}>
+                    Proving the band, then submitting through Lace
                   </li>
                 </ul>
+              )}
+
+              {!wallet && !walletPresent && (
+                <p className="install-hint">
+                  No Midnight wallet detected.{" "}
+                  <a
+                    href="https://chromewebstore.google.com/detail/lace-beta/hgeekaiplokcnmakghbdfbgnlfheichg"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Install Lace
+                  </a>{" "}
+                  and set it to {config.network}.
+                </p>
               )}
 
               {error && <div className="notice error">{error}</div>}
 
               {result && (
                 <div className="notice done">
-                  Published band {String(result.band)}.{" "}
-                  <a
-                    href={`https://indexer.${config.network}.midnight.network/api/v4/graphql`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    tx {result.txId.slice(0, 12)}…
-                  </a>
+                  <div>Published band {String(result.band)}. The amount was not sent.</div>
+                  <code className="txid">{result.txId}</code>
                 </div>
               )}
 
