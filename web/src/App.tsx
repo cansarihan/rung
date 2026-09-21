@@ -18,6 +18,40 @@ const hex = (bytes: Uint8Array, cut = 8): string => {
   return `${full.slice(0, cut)}…${full.slice(-4)}`;
 };
 
+/**
+ * The mark: a ladder whose rungs light in sequence. Decorative, so it is
+ * hidden from assistive technology and stops animating when the visitor has
+ * asked for reduced motion.
+ */
+const HeroMark = () => (
+  <div className="mark" aria-hidden="true">
+    <div className="mark-glow" />
+    {Array.from({ length: 7 }, (_, i) => (
+      <div className="mark-rung" key={i} style={{ "--i": i } as React.CSSProperties}>
+        <span className="mark-bar" />
+      </div>
+    ))}
+  </div>
+);
+
+const STEPS = [
+  {
+    n: "01",
+    title: "Type the amount",
+    body: "It goes into the page and no further. Nothing is posted anywhere while you type.",
+  },
+  {
+    n: "02",
+    title: "Prove the band",
+    body: "A zero knowledge proof shows the amount sits between two published bounds, without carrying the amount.",
+  },
+  {
+    n: "03",
+    title: "The ladder moves",
+    body: "One band count goes up. Nobody, including this site, ends up holding a salary.",
+  },
+];
+
 const Ladder = ({
   survey,
   mine,
@@ -178,14 +212,21 @@ export const App = () => {
 
       <main className="shell">
         <section className="hero">
-          <h1>
-            Nobody here learns <em>what you earn</em>.
-          </h1>
-          <p>
-            Rung collects a compensation survey without collecting compensation.
-            You prove which band your pay falls in; the amount stays on this
-            device and never reaches the chain.
-          </p>
+          <div className="hero-copy">
+            <span className="eyebrow">Zero knowledge compensation survey</span>
+            <h1>
+              Nobody here learns <em>what you earn</em>.
+            </h1>
+            <p>
+              Rung collects a compensation survey without collecting
+              compensation. You prove which band your pay falls in; the amount
+              stays on this device and never reaches the chain.
+            </p>
+          </div>
+          <HeroMark />
+        </section>
+
+        <section className="stats-row">
           <div className="stats">
             <div className="stat">
               <div className="value">{survey ? String(survey.reportCount) : "—"}</div>
@@ -202,6 +243,16 @@ export const App = () => {
               <div className="label">Bands</div>
             </div>
           </div>
+        </section>
+
+        <section className="how">
+          {STEPS.map((step) => (
+            <article className="step" key={step.n}>
+              <span className="step-n">{step.n}</span>
+              <h3>{step.title}</h3>
+              <p>{step.body}</p>
+            </article>
+          ))}
         </section>
 
         <section className="columns">
@@ -342,9 +393,14 @@ export const App = () => {
 
       <footer>
         <div className="shell">
-          <span>
-            Contract <code>{config.contractAddress || "not configured"}</code>
-          </span>
+          <div className="foot-block">
+            <div className="foot-label">Contract</div>
+            <code>{config.contractAddress || "not configured"}</code>
+          </div>
+          <div className="foot-block">
+            <div className="foot-label">Network</div>
+            <span>{config.network}</span>
+          </div>
           <span className="spacer" />
           <a href="https://github.com/cansarihan/rung">Source</a>
         </div>

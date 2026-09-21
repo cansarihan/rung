@@ -13,7 +13,7 @@
   --good: #4ec9a0;
   --bad: #e5707a;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
-  --mono: "SF Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --mono: "JetBrains Mono", "SF Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --shell: 1120px;
 }
 
@@ -246,8 +246,8 @@ button:disabled {
   display: grid;
   grid-template-columns: 148px minmax(0, 1fr) 46px;
   align-items: center;
-  gap: 14px;
-  padding: 7px 0;
+  gap: 16px;
+  padding: 8px 0;
 }
 
 .rung .range {
@@ -498,4 +498,257 @@ a {
 
 a:hover {
   color: var(--text);
+}
+
+/* =================================================================
+   Depth and motion
+   ================================================================= */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-copy,
+.stats-row,
+.how,
+.columns {
+  animation: rise 620ms cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+
+.stats-row {
+  animation-delay: 70ms;
+}
+.how {
+  animation-delay: 140ms;
+}
+.columns {
+  animation-delay: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ------------------------------------------------------------ hero layout */
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 48px;
+  align-items: center;
+  padding: 96px 0 40px;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding-bottom: 8px;
+  }
+  .mark {
+    display: none;
+  }
+}
+
+.eyebrow {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 5px 11px;
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  background: var(--accent-soft);
+  margin-bottom: 26px;
+}
+
+/* -------------------------------------------------------------- hero mark */
+
+.mark {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  height: 320px;
+  padding: 0 8px;
+}
+
+.mark-glow {
+  position: absolute;
+  inset: 12% -18% 12% -18%;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(240, 168, 60, 0.16),
+    transparent 68%
+  );
+  filter: blur(6px);
+}
+
+.mark-rung {
+  position: relative;
+  height: 10px;
+}
+
+.mark-bar {
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    rgba(240, 168, 60, 0.08),
+    rgba(240, 168, 60, 0.55)
+  );
+  transform-origin: left center;
+  animation: climb 4.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: calc(var(--i) * 0.16s);
+  opacity: 0.25;
+}
+
+@keyframes climb {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: scaleX(0.55);
+  }
+  38% {
+    opacity: 0.95;
+    transform: scaleX(1);
+  }
+  70% {
+    opacity: 0.3;
+    transform: scaleX(0.75);
+  }
+}
+
+/* Rungs shorten towards the top, so the shape reads as a ladder in
+   perspective rather than a stack of equal bars. */
+.mark-rung:nth-child(2) { width: 58%; }
+.mark-rung:nth-child(3) { width: 72%; }
+.mark-rung:nth-child(4) { width: 88%; }
+.mark-rung:nth-child(5) { width: 100%; }
+.mark-rung:nth-child(6) { width: 84%; }
+.mark-rung:nth-child(7) { width: 66%; }
+.mark-rung:nth-child(8) { width: 48%; }
+
+/* ------------------------------------------------------------- stats strip */
+
+.stats-row {
+  padding-bottom: 12px;
+}
+
+.stats {
+  margin-top: 0;
+}
+
+.stat .value {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------- how it works */
+
+.how {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  padding: 38px 0 52px;
+}
+
+@media (max-width: 900px) {
+  .how {
+    grid-template-columns: 1fr;
+  }
+}
+
+.step {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  padding: 22px 22px 24px;
+  background: linear-gradient(180deg, var(--surface), rgba(16, 18, 24, 0.4));
+  transition: border-color 200ms ease, transform 200ms ease;
+}
+
+.step:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+}
+
+.step-n {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+}
+
+.step h3 {
+  font-size: 15.5px;
+  font-weight: 580;
+  margin: 12px 0 8px;
+  letter-spacing: -0.01em;
+}
+
+.step p {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.62;
+}
+
+/* ------------------------------------------------------------ ladder polish */
+
+.rung .track {
+  position: relative;
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.rung .fill {
+  background: linear-gradient(90deg, #39415c, #515d80);
+}
+
+.rung.mine .fill {
+  background: linear-gradient(90deg, #d58b25, var(--accent));
+}
+
+.rung:hover .range {
+  color: var(--text);
+}
+
+.rung .count {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* -------------------------------------------------------------- footer */
+
+footer .shell {
+  align-items: flex-start;
+  gap: 44px;
+}
+
+.foot-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 5px;
+}
+
+.foot-block code,
+.foot-block span {
+  font-family: var(--mono);
+  color: var(--muted);
+  font-size: 12.5px;
 }
