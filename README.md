@@ -256,6 +256,22 @@ npm run show
 
 `report` sends the band. It does not send `82000`.
 
+### The client
+
+```bash
+npm run dev
+```
+
+The dev server copies the circuit and proving key out of
+`contract/src/managed` into `web/public` first, because the browser fetches them
+over HTTP at proving time. `VITE_NETWORK_ID` picks the network and
+`VITE_CONTRACT_ADDRESS` overrides the survey; with neither set the client opens
+the Preview survey recorded in `web/src/config.ts`.
+
+Reporting from the browser needs the
+[Lace Midnight extension](https://chromewebstore.google.com/detail/lace-beta/hgeekaiplokcnmakghbdfbgnlfheichg)
+set to the same network. Reading the ladder needs nothing.
+
 ## Deployment
 
 A survey is live on Midnight Preview:
